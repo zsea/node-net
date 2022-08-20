@@ -101,7 +101,8 @@ class Socket extends netSocket {
             break;
         }
     }
-    private readBuffer(length: number, callback: BUFFER_CALLBACK, isString: boolean = false, endFalg: 0 | 10 = 0): void {
+
+    private readBufferFragment(length: number, callback: BUFFER_CALLBACK, isString: boolean = false, endFalg: 0 | 10 = 0): void {
         let nBuffer: Buffer | undefined;
         if (isString) {
             nBuffer = getString(this.buffer, length, endFalg);
@@ -127,7 +128,7 @@ class Socket extends netSocket {
     }
     private readData<T>(length: number, converter: (buffer: Buffer) => T, isString: boolean = false, endFalg: 0 | 10 = 0): Promise<T> {
         return new Promise<T>((resolve, reject) => {
-            this.readBuffer(length, (err: Error | null, buffer?: Buffer)=>{
+            this.readBufferFragment(length, (err: Error | null, buffer?: Buffer) => {
                 if (err) {
                     reject(err);
                 }
@@ -136,7 +137,7 @@ class Socket extends netSocket {
                 }
                 else {
                     const nullError = new SocketError(`buffer cant be null or undefined`);
-                    nullError.code="BUFFER_IS_NULL";
+                    nullError.code = "BUFFER_IS_NULL";
                     reject(nullError);
                 }
 
@@ -235,6 +236,9 @@ class Socket extends netSocket {
     }
     readBigUint64LE(): Promise<bigint> {
         return this.readData<bigint>(8, buffer => buffer.readBigUint64LE());
+    }
+    readBuffer(length: number): Promise<Buffer> {
+        return this.readData<Buffer>(length, buffer => buffer, false);
     }
     //
     writeDoubleBE(value: number): void {
@@ -374,18 +378,18 @@ function connect(port: number | string | NetConnectOpts, host?: string | (() => 
         else if (typeof host === "function") {
             listener = host;
         }
-        socket=new Socket();
-        socket.connect(port,h,listener);
+        socket = new Socket();
+        socket.connect(port, h, listener);
     }
     else if (typeof port === "string") {
-        const path: string = port, listener: (() => void) | undefined=host as (() => void);
-        socket=new Socket();
-        socket.connect(path,listener);
+        const path: string = port, listener: (() => void) | undefined = host as (() => void);
+        socket = new Socket();
+        socket.connect(path, listener);
     }
     else {
-        const o=port,listener: (() => void) | undefined=host as (() => void);
-        socket=new Socket();
-        socket.connect(o,listener);
+        const o = port, listener: (() => void) | undefined = host as (() => void);
+        socket = new Socket();
+        socket.connect(o, listener);
     }
     return socket;
 }
