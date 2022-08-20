@@ -1,6 +1,6 @@
 {
   "name": "@zsea/net",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "net",
   "main": "lib/net.js",
   "types": "lib/net.d.ts",

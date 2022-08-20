@@ -405,5 +405,6 @@ export {
     Socket,
     connect,
     connect as createConnection,
-    createServer
+    createServer,
+    SocketError
 }
