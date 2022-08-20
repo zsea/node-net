@@ -1,0 +1,45 @@
+{
+  "name": "@zsea/net",
+  "version": "0.0.6",
+  "description": "net",
+  "main": "lib/net.js",
+  "types": "lib/net.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest --config jestconfig.json",
+    "format": "prettier --write \"src/*.ts\"",
+    "lint": "tslint -p tsconfig.json",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run test && npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags",
+    "tsc":"ts-node src/__tests__/net.test.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zsea/node-net.git"
+  },
+  "keywords": [
+    "node-net"
+  ],
+  "author": "zsea",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zsea/node-net/issues"
+  },
+  "homepage": "https://github.com/zsea/node-net#readme",
+  "devDependencies": {
+    "@types/jest": "^28.1.7",
+    "jest": "^28.1.3",
+    "prettier": "^2.7.1",
+    "ts-jest": "^28.0.8",
+    "ts-node": "^10.9.1",
+    "tslint": "^6.1.3",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^4.7.4"
+  },
+  "files": [
+    "lib/**/*"
+  ]
+}
