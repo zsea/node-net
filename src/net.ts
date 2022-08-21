@@ -1,12 +1,12 @@
 import { Server as netServer, Socket as netSocket, connect as netConnect, NetConnectOpts, createServer as netCreateServer, ServerOpts, SocketConstructorOpts, SocketConnectOpts } from "net";
 import SocketError from "./error";
-function getBuffer(buffer: Buffer | null | undefined, length: number) {
+function getBuffer(buffer: Buffer | null | undefined, length: number):BufferFragment|undefined {
     if (buffer && buffer.length >= length) {
         const nBuffer = buffer.subarray(0, length);
-        return nBuffer;
+        return new BufferFragment(nBuffer);
     }
 }
-function getString(buffer: Buffer | null | undefined, length: number = Number.MAX_VALUE, endFalg: 0 | 10 = 0) {
+function getString(buffer: Buffer | null | undefined, length: number = Number.MAX_VALUE, endFalg: 0 | 10 = 0):BufferFragment|undefined {
     if (buffer && buffer.length) {
         let endLength = 0;
         for (let i = 0; i < buffer.length; i++) {
@@ -16,7 +16,7 @@ function getString(buffer: Buffer | null | undefined, length: number = Number.MA
             }
         }
         if (endLength) {
-            return buffer.subarray(0, endLength);
+            return new BufferFragment(buffer.subarray(0, endLength));
         }
     }
 }
@@ -29,6 +29,15 @@ class BufferReader {
     constructor(length: number, callback: BUFFER_CALLBACK) {
         this.length = length;
         this.callback = callback;
+    }
+}
+// tslint:disable-next-line
+class BufferFragment{
+    length:number
+    buffer:Buffer
+    constructor(buffer:Buffer,length?:number){
+        this.buffer=buffer;
+        this.length=length?length:buffer.length
     }
 }
 // tslint:disable-next-line
@@ -84,7 +93,7 @@ class Socket extends netSocket {
     private onData(): void {
         while (this.readerList && this.readerList.length) {
             const item = this.readerList[0];
-            let nBuffer: Buffer | undefined;
+            let nBuffer: BufferFragment | undefined;
             if (item.isString) {
                 nBuffer = getString(this.buffer, item.length, item.stringEndFlag);
             }
@@ -93,9 +102,9 @@ class Socket extends netSocket {
             }
             if (nBuffer) {
 
-                this.buffer = this.buffer?.subarray(item.length);
+                this.buffer = this.buffer?.subarray(nBuffer.length);
                 this.readerList.shift();
-                item.callback(null, nBuffer);
+                item.callback(null, nBuffer.buffer);
                 continue;
             }
             break;
@@ -103,7 +112,7 @@ class Socket extends netSocket {
     }
 
     private readBufferFragment(length: number, callback: BUFFER_CALLBACK, isString: boolean = false, endFalg: 0 | 10 = 0): void {
-        let nBuffer: Buffer | undefined;
+        let nBuffer: BufferFragment | undefined;
         if (isString) {
             nBuffer = getString(this.buffer, length, endFalg);
         }
@@ -111,7 +120,8 @@ class Socket extends netSocket {
             nBuffer = getBuffer(this.buffer, length);
         }
         if (nBuffer) {
-            callback(null, nBuffer);
+            this.buffer = this.buffer?.subarray(nBuffer.length);
+            callback(null, nBuffer.buffer);
         }
         else {
             this.readerList.push({
